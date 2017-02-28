@@ -1,0 +1,266 @@
+\documentclass[11pt,a4paper]{jsarticle}
+%
+\usepackage{ascmac, here, txfonts, txfonts}
+\usepackage{color}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{listings,jlisting}
+%
+\usepackage{bm}
+%
+\usepackage{cancel}
+%
+\setlength{\textwidth}{\fullwidth}
+\setlength{\textheight}{40\baselineskip}
+\addtolength{\textheight}{\topskip}
+\setlength{\voffset}{-0.2in}
+\setlength{\topmargin}{0pt}
+\setlength{\headheight}{0pt}
+\setlength{\headsep}{0pt}
+
+\lstset{
+  language = {Python},
+  basicstyle = {\small},
+  identifierstyle = {\small},
+  commentstyle = {\itshape \color[cmyk]{1,0.4,1,0}},
+  keywordstyle = {\bfseries \color[cmyk]{0,1,0,0}},
+  ndkeywordstyle = {\small},
+  stringstyle = {\ttfamily \color[rgb]{0,0,1}},
+  frame = {tb},
+  breaklines = true,
+  keepspaces = true,
+  columns = [l]{fullflexible},
+  numbers = left,
+  xrightmargin = 0zw,
+  xleftmargin = 3zw,
+  numberstyle = {\scriptsize},
+  stepnumber = 1,
+  numbersep = 1zw,
+  lineskip = -0.5ex
+}
+
+\begin{document}
+
+\section{相関係数}
+
+前回，最小二乗誤差の考えをもとに，線形回帰分析により回帰直線を求めた．
+これにより，線形関係のある値間の大雑把な関係を求めることができた．
+
+
+しかし，どの程度関係があるのかはわかっていない．求められた分析の結果を評価する場合に，相関係数を求めることが多い．
+相関係数とは二つのものの間にどの程度関連があるかを数値で客観的に表すものであり，統計学，機械学習などを扱う際よく使用される指標である．そのため，今回は相関係数について学んだ．
+
+下記の図が使用するデータである．
+
+　
+
+\begin{table}[htb]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+顧客番号 & 年齢(x) & 年間支出額(y) \\ \hline
+1 & 32 & 40,000 \\ \hline
+2 & 23 & 38,000 \\ \hline
+3 & 39 & 46,000 \\ \hline
+4 & 45 & 47,000 \\ \hline
+5 & 47 & 48,000 \\ \hline
+\end{tabular}
+\caption
+{顧客の年齢とその人が年間にかける化粧品代のデータ1}
+\label
+{population}
+\end{center}
+\end{table}
+
+\begin{table}[htb]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+顧客番号 & 年齢(x) & 年間支出額(y) \\ \hline
+1 & 32 & 39,500 \\ \hline
+2 & 23 & 39,000 \\ \hline
+3 & 39 & 47,000 \\ \hline
+4 & 45 & 47,000 \\ \hline
+5 & 47 & 47,600 \\ \hline
+\end{tabular}
+\caption
+{顧客の年齢とその人が年間にかける化粧品代のデータ2}
+\label
+{population}
+\end{center}
+\end{table}
+
+
+%%図の作成及び計算はPythonを用いた．
+
+\newpage
+
+\section{共分散}
+
+共分散は一緒に変化する２つの変数の傾向を測る尺度であり，数列X,Yが存在するとき，それらX,Yの平均からの距離である偏差は，$x_n−\overline{x}$と$y_n−\overline{y}$になる．
+
+$\overline{x}$はXの標本平均，$\overline{y}$はYの標本平均である．XとYの変動が一緒であれば，これらの偏差は同じ符号になる．
+
+２つの偏差を掛け合わせた場合，偏差が同じ符号を持つならば積は正になり，異なる符号を持っている場合，負の数になる．
+そのため，積の和がXとYが一緒に変動するかどうかを表す尺度になる．
+共分散とはこれらの偏差の積の平均である．
+
+以下が式となる．
+
+
+
+\begin{eqnarray*}
+\displaystyle (X,Yの共分散) &=&
+\frac{(x_1−\overline{x})(y_1−\overline{y})+
+(x_2−\overline{x})(y_2−\overline{y})+
+\cdot\cdot\cdot \ +
+(x_n−\overline{x})(y_n−\overline{y})}{n}\\
+\\
+&=& \frac{1}{n} \sum_{i=1}^{n} (x_i−\overline{x})(y_i−\overline{y})\\
+\end{eqnarray*}
+%%n = サンプルの総数
+表１のデータから共分散を求めるプログラム
+\begin{lstlisting}[caption=]
+import numpy as np
+
+X = np.array([32,	23,	  39,       45,       47])
+Y = np.array([40000, 38000, 46000, 47000, 48000])
+
+# X,Yの平均を求める
+meanX = np.mean(X)
+meanY = np.mean(Y)
+
+# X,Yの共分散を求める
+covXY = np.dot(X-meanX, Y-meanY) / len(X)
+print (covXY)
+\end{lstlisting}
+実行結果
+\begin{lstlisting}[caption=]
+34440.0
+\end{lstlisting}
+４,５行目のデータを表２のデータに書き換えた
+\begin{lstlisting}[caption=]
+X = np.array([32,	23,	  39,       45,       47])
+Y = np.array([39500, 39000, 47000, 47000, 47600])
+\end{lstlisting}
+実行結果
+\begin{lstlisting}[caption=]
+31696.0
+\end{lstlisting}
+共分散は，おおよその見当は付けられるものの，XとYの単位の積であるため，今回は歳-円という単位になるが，この単位自体には意味がなく解釈が難しい．そのため次の相関係数といわれるものがよく統計の評価に使われる．
+
+\newpage
+\section{相関係数}
+
+共分散の単位の問題を解決するために，
+今回ではX，Yの共分散からXの標準偏差とYの標準偏差をかけたものを割る．
+標準偏差は各データの値を平均の差の２乗の合計をデータの個数で割った値の平方根したもので，
+以下の式で表される
+
+
+
+\[ 標準偏差 = \sqrt {\frac{1}{n} \sum_{i=1}^{n} (x_i - \overline{x} )^2 }\]
+
+\
+\\
+ X の 標準偏差と Y の標準偏差をかけたものを割ることで単位が消され，
+ 数値として２変数間の関係が表すことができる．
+
+
+
+\[ \frac{(X,Yの共分散)(\cancel{歳-円})}{(Xの標準偏差)(\cancel{歳})(Yの標準偏差)(\cancel{円})} \]
+
+\
+\\
+よってX,Yの相関係数は以下のように表される．
+
+
+\[ (X,Yの相関係数) = \frac{(X,Yの共分散)}{(Xの標準偏差)(Yの標準偏差)} \]
+\
+\\
+\
+\\
+表１のデータから相関係数を求めるプログラム
+
+\begin{lstlisting}[caption=]
+import numpy as np
+
+X = np.array([32,	23,	  39,       45,       47])
+Y = np.array([40000, 38000, 46000, 47000, 48000])
+
+# X,Yの標準偏差を求める
+stdX = np.std(X)
+stdY = np.std(Y)
+
+# X,Yの共分散を求める
+covXY = np.dot(X-np.mean(X), Y-np.mean(Y)) / len(X)
+
+# X,Yの相関係数を求める
+print ( covXY / (stdX * stdY) )
+\end{lstlisting}
+実行結果
+\begin{lstlisting}[caption=]
+0.971548171177
+\end{lstlisting}
+４,５行目のデータを表２のデータに書き換えた
+\begin{lstlisting}[caption=]
+X = np.array([32,	23,	  39,       45,       47])
+Y = np.array([39500, 39000, 47000, 47000, 47600])
+\end{lstlisting}
+実行結果
+\begin{lstlisting}[caption=]
+0.920684967629
+\end{lstlisting}
+\
+\\
+\\
+
+相関係数は，−1以上1以下の実数を値にとり，相関係数が正のとき確率変数には正の相関が，負のとき確率変数には負の相関がある．
+
+一般的には以下のような関係にあると言われている．だが変数間の因果関係を説明するものではないので注意が必要である．
+\
+\\
+\begin{table}[htb]
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+相関係数 & 相関の強さ \\ \hline
+$0.0 \sim \pm 0.2$ & (ほとんど)相関がない \\ \hline
+$0.2 \sim \pm 0.4$ & 弱い相関がある \\ \hline
+$0.4 \sim \pm 0.7$ & 相関がある \\ \hline
+$0.7 \sim \pm 0.9$ & 強い相関がある \\ \hline
+$0.9 \sim \pm 1.0$ & (ほぼ)完全な相関がある \\ \hline
+\end{tabular}
+\caption
+{相関係数と相関の関係を表したもの}
+\label
+{population}
+\end{center}
+\end{table}
+
+しかし相関係数を使い，２つの変数の関係が詳しく調べると，一方から他方を予測することができる．
+今回であったら結果がそれぞれ0.97, 0.92だったので図１の左上のような散布図になることが予想することができる．
+\
+\\
+\begin{figure}[htbp]
+  \begin{center}
+    \includegraphics[width=8.0cm]{./output_1_0.png}
+    \caption{x，yの組と相関係数を表したもの \cite{corr-wiki}}
+  \end{center}
+\end{figure}
+
+
+\newpage
+\begin{thebibliography}{2}
+
+	\bibitem{numpy_ref}NumPy Reference
+	\\ https://docs.scipy.org/doc/numpy/reference/index.html
+
+	\bibitem{leastmean} Allen B. Downey (2015) Think Stats —— プログラマのための統計入門 \\
+	(著，黒川 洋・訳，黒川 利明)　 O'Reilly Japan
+
+  \bibitem{corr-wiki}相関係数 - Wikipedia
+	\\ https://ja.wikipedia.org/wiki/%E7%9B%B8%E9%96%A2%E4%BF%82%E6%95%B0
+
+\end{thebibliography}
+
+\end{document}
